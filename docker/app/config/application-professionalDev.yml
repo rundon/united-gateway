@@ -1,0 +1,307 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.16.139:8761/eureka/
+    enabled: true
+    register-with-eureka: true
+  instance:
+    hostname: ${SERVICE_NAME:${HOSTNAME}}
+spring:
+  application:
+    name: professional-gateway
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.16.234:3306/profession_gateway_dev?createDatabaseIfNotExist=true&characterEncoding=UTF-8&zeroDateTimeBehavior=CONVERT_TO_NULL&serverTimezone=GMT%2B8&sslMode=DISABLED&allowPublicKeyRetrieval=true
+    username: root
+    password: onefly@Mysql321
+  redis:
+    host: 192.168.16.212
+    database: 13
+  cloud:
+    gateway:
+      routes:
+        #activiti服务接口转发
+        - id: act
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/act/**
+          filters:
+            - StripPrefix= 1
+        #assembly服务接口转发
+        - id: sysLog
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/log/**
+          filters:
+            - StripPrefix= 1
+        - id: sysOss
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/oss/**
+          filters:
+            - StripPrefix= 1
+        - id: annexeOss
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/professional/annexe/**
+          filters:
+            - StripPrefix= 1
+        - id: sysMailLog
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/maillog/**
+          filters:
+            - StripPrefix= 1
+        - id: sysMailTemplate
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/mailtemplate/**
+          filters:
+            - StripPrefix= 1
+        - id: sysSms
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/sms/**
+          filters:
+            - StripPrefix= 1
+        - id: sysSmsLog
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/smslog/**
+          filters:
+            - StripPrefix= 1
+        - id: schedule
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/schedule/**
+          filters:
+            - StripPrefix= 1
+        - id: scheduleLog
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/sys/scheduleLog/**
+          filters:
+            - StripPrefix= 1
+        - id: assembly
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/assembly/**
+          filters:
+            - StripPrefix= 1
+        - id: resources
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/resources/**
+        - id: PcMresources
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/resources/**
+          filters:
+            - StripPrefix= 1
+        - id: PcModule
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/pcms/modeler/**
+          filters:
+            - StripPrefix= 2
+        #sys服务接口转发
+        - id: sys
+          uri: lb://sys-admin
+          predicates:
+            - Path=/pcms/sys/**
+          filters:
+            - StripPrefix= 1
+        - id: captcha
+          uri: lb://sys-admin
+          predicates:
+            - Path=/pcms/captcha
+          filters:
+            - StripPrefix= 1
+        - id: login
+          uri: lb://sys-admin
+          predicates:
+            - Path=/pcms/login
+          filters:
+            - StripPrefix= 1
+        - id: sso
+          uri: lb://sys-admin
+          predicates:
+            - Path=/pcms/sso
+          filters:
+            - StripPrefix= 1
+        - id: logout
+          uri: lb://sys-admin
+          predicates:
+            - Path=/pcms/logout
+          filters:
+            - StripPrefix= 1
+        #专业管理+课程管理服务接口转发
+        - id: curriculum
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/curriculum/**
+          filters:
+            - StripPrefix= 1
+        - id: pcmCourse
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/pcm/course/**
+          filters:
+            - StripPrefix= 1
+        - id: plan
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/plan/**
+          filters:
+            - StripPrefix= 1
+        - id: professional
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/professional/**
+          filters:
+            - StripPrefix= 1
+        - id: training
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/training/**
+          filters:
+            - StripPrefix= 1
+        - id: course
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/course/**
+          filters:
+            - StripPrefix= 1
+        - id: task
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/task/**
+          filters:
+            - StripPrefix= 1
+        - id: cockpit
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/cockpit/**
+          filters:
+            - StripPrefix= 1
+        - id: expert
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/expert/**
+          filters:
+            - StripPrefix= 1
+        - id: basic
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/basic/**
+          filters:
+            - StripPrefix= 1
+        - id: warning
+          uri: lb://professional-admin
+          predicates:
+            - Path=/pcms/warning/**
+          filters:
+            - StripPrefix= 1
+        #专业调研服务接口转发
+        - id: survey
+          uri: lb://survey-admin
+          predicates:
+            - Path=/pcms/survey/**
+          filters:
+            - StripPrefix= 1
+        #公示服务接口转发
+        - id: publicity
+          uri: lb://publicity-admin
+          predicates:
+            - Path=/pcms/publicity/**
+          filters:
+            - StripPrefix= 1
+        #文件预览
+        - id: unitedView
+          uri: lb://professional-unitedView
+          predicates:
+            - Path=/pcms/preview/**
+          filters:
+            - StripPrefix= 1
+        - id: unitedViewFile
+          uri: lb://professional-unitedView
+          predicates:
+            - Path=/file/**
+          filters:
+            - PrefixPath=/preview
+        - id: unitedViewPamsFile
+          uri: lb://professional-unitedView
+          predicates:
+            - Path=/pcms/file/**
+          filters:
+            - StripPrefix= 1
+            - PrefixPath=/preview
+        #问卷调查
+        - id: questionnaire
+          uri: lb://question-admin
+          predicates:
+            - Path=/pcms/questionnaire/**
+          filters:
+            - StripPrefix= 1
+        - id: questionnaireFile
+          uri: lb://question-admin
+          predicates:
+            - Path=/questionnaire/**
+        ##接口文档
+        - id: assembly服务
+          uri: lb://assembly-admin
+          predicates:
+            - Path=/assembly/**
+          filters:
+            - StripPrefix= 1
+            - SwaggerHeaderFilter
+        - id: 专业管理+课程管理服务
+          uri: lb://professional-admin
+          predicates:
+            - Path=/professional/**
+          filters:
+            - StripPrefix= 1
+            - SwaggerHeaderFilter
+        - id: sys服务
+          uri: lb://sys-admin
+          predicates:
+            - Path=/sysadmin/**
+          filters:
+            - StripPrefix= 1
+            - SwaggerHeaderFilter
+        - id: 公示服务接口转发
+          uri: lb://publicity-admin
+          predicates:
+            - Path=/publicity/**
+          filters:
+            - StripPrefix= 1
+            - SwaggerHeaderFilter
+        - id: 专业调研服务接口转发
+          uri: lb://survey-admin
+          predicates:
+            - Path=/survey/**
+          filters:
+            - StripPrefix= 1
+            - SwaggerHeaderFilter
+        - id: 问卷调查
+          uri: lb://question-admin
+          predicates:
+            - Path=/questionnaire/**
+          filters:
+            - StripPrefix= 1
+            - SwaggerHeaderFilter
+#        - id: 教师考评系统
+#          uri: lb://admin
+#          predicates:
+#            - Path=/united/**
+#          filters:
+#            #- SwaggerHeaderFilter
+#            - StripPrefix=1
+#
+#        - id: 文档服务
+#          uri: lb://united-oss
+#          predicates:
+#            - Path=/oss/**
+#          filters:
+#            #- SwaggerHeaderFilter
+#            - StripPrefix=1

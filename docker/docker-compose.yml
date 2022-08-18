@@ -1,0 +1,48 @@
+version: "3.7"
+services:
+  gateway:
+    image: ${IMAGE_FULL_NAME}
+    networks:
+      - evaluation
+    ports:
+      - PORT:8080
+    volumes:
+      - data:/data
+    environment:
+      - spring.profiles.active=${ENV}
+      - FORMAT_MESSAGES_PATTERN_DISABLE_LOOKUPS=true
+      - JAVA_OPTS=-server -Xms512m -Xmx1024m
+        -verbose:gc
+        -XX:+PrintCommandLineFlags
+        -XX:+PrintGCDetails
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/data/dump/
+        -Dlog4j2.formatMsgNoLookups=true
+    deploy:
+      replicas: ${REPLICAS_COUNT}
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+      update_config:
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.ENTRANCEgateway.rule=PathPrefix(`/pcms`)"
+        - "traefik.http.routers.ENTRANCEgateway.entrypoints=ENTRANCE"
+        - "traefik.http.services.ENTRANCEgateway.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 6
+      start_period: 60s
+networks:
+  evaluation:
+    external: true
+volumes:
+  data:
+

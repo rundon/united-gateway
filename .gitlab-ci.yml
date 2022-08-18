@@ -1,0 +1,400 @@
+image: 31edu.f3322.net:9902/docker/gitlab-ci:latest
+
+# 定义全局环境变量
+variables:
+  ENV: dev
+  IMAGE_FULL_NAME: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA"
+  REPLICAS_COUNT: 1
+
+stages:
+  - build
+  - package
+  - dev
+  - test
+  - preview
+  - prod
+
+gateway:mvn:build:
+  image: 31edu.f3322.net:9902/docker/maven:alpine
+  stage: build
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+    MAVEN_CLI_OPTS: "-T 1C --show-version -e -U -Dmaven.test.skip=true"
+  script:
+    - mvn $MAVEN_CLI_OPTS clean package -f pom.xml
+  cache:
+    paths:
+      - .m2/repository
+  artifacts:
+    paths:
+      - target/*.jar
+  tags:
+    - shared
+  only:
+    - /^release.*$/
+
+gateway:docker:package:
+  stage: package
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - cp target/*.jar docker/app/bootstrap.jar
+    - docker build --rm --pull -t "$IMAGE_FULL_NAME" docker/
+    - docker push "$IMAGE_FULL_NAME"
+    - docker image rm -f "$IMAGE_FULL_NAME"
+  dependencies:
+    - gateway:mvn:build
+  tags:
+    - shared
+  only:
+    - /^release.*$/
+
+#专业建设网关
+gateway:professionalDev:dev:
+  stage: dev
+  variables:
+    ENV: professionalDev
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - professionalDev
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:professionalTest:test:
+  stage: test
+  variables:
+    ENV: professionalTest
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - zyjstest
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:professionalPreview:preview:
+  stage: preview
+  variables:
+    ENV: professionalPreview
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - zyjs24
+  when: manual
+  only:
+    - /^release.*$/
+#闽西职业预发
+gateway:mingxi:preview:
+  stage: preview
+  variables:
+    ENV: professionalMingxiPreview
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - pro242
+  when: manual
+  only:
+    - /^release.*$/
+
+#闽西专业建设80
+gateway:mingxi80:preview:
+  stage: preview
+  variables:
+    ENV: professionalMinxiPre80
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - mx80
+  when: manual
+  only:
+    - /^release.*$/
+
+#泉幼aliyun
+gateway:QyAli:preview:
+  stage: preview
+  variables:
+    ENV: professionalQYAli
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - syjyxy
+  when: manual
+  only:
+    - /^release.*$/
+
+#闽西生产
+gateway:mingxi:prod:
+  stage: prod
+  variables:
+    ENV: professionalMinxiProd
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - mxzyjs
+  when: manual
+  only:
+    - /^release.*$/
+#演示
+gateway:Ys:preview:
+  stage: preview
+  variables:
+    ENV: professionalYsPreview
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|web|g"
+      | docker stack deploy --with-registry-auth -c - ProgramConstruct'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - 213ys
+  when: manual
+  only:
+    - /^release.*$/
+
+#课堂行为网关
+gateway:classroomDev:dev:
+  stage: dev
+  variables:
+    ENV: classroomDev
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8181|g"
+      | sed "s|ENTRANCE|http|g"
+      | docker stack deploy --with-registry-auth -c - classroomBehavior'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - professionalDev
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:classroomTest:test:
+  stage: test
+  variables:
+    ENV: classroomTest
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8181|g"
+      | sed "s|ENTRANCE|http|g"
+      | docker stack deploy --with-registry-auth -c - classroomBehavior'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - zyjstest
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:classroom:prod:
+  stage: prod
+  variables:
+    ENV: classroomProd
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|http|g"
+      | docker stack deploy --with-registry-auth -c - classroomBehavior'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - xinxiedu
+  when: manual
+  only:
+    - /^release.*$/
+
+#泉州华侨
+gateway:classroom:quanzhou:
+  stage: prod
+  variables:
+    ENV: classroomQuanzhou
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8080|g"
+      | sed "s|ENTRANCE|http|g"
+      | docker stack deploy --with-registry-auth -c - classroomBehavior'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - qzzxEhall
+  when: manual
+  only:
+    - /^release.*$/
+
+#网络评审网关
+gateway:reviewDev:dev:
+  stage: dev
+  variables:
+    ENV: reviewDev
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8282|g"
+      | sed "s|ENTRANCE|review|g"
+      | docker stack deploy --with-registry-auth -c - webReview'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - professionalDev
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:reviewTest:test:
+  stage: test
+  variables:
+    ENV: reviewTest
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8282|g"
+      | sed "s|ENTRANCE|review|g"
+      | docker stack deploy --with-registry-auth -c - webReview'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - zyjstest
+  when: manual
+  only:
+    - /^release.*$/
+
+#三全育人网关
+gateway:sanquanDev:dev:
+  stage: dev
+  variables:
+    ENV: sanquanDev
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8888|g"
+      | sed "s|ENTRANCE|sanquan|g"
+      | docker stack deploy --with-registry-auth -c - SanquanEducation'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - professionalDev
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:sanquanTest:test:
+  stage: test
+  variables:
+    ENV: sanquanTest
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8888|g"
+      | sed "s|ENTRANCE|sanquan|g"
+      | docker stack deploy --with-registry-auth -c - SanquanEducation'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - zyjstest
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:sanquanPreview:preview:
+  stage: preview
+  variables:
+    ENV: sanquanPreview
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8888|g"
+      | sed "s|ENTRANCE|sanquan|g"
+      | docker stack deploy --with-registry-auth -c - SanquanEducation'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - sanquna23
+  when: manual
+  only:
+    - /^release.*$/
+
+gateway:sanquanProd:prod:
+  stage: prod
+  variables:
+    ENV: sanquanProd
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - 'cat docker/docker-compose.yml
+      | sed "s|PORT|8888|g"
+      | sed "s|ENTRANCE|sanquan|g"
+      | docker stack deploy --with-registry-auth -c - SanquanEducation'
+  dependencies:
+    - gateway:docker:package
+  tags:
+    - sanquanPro
+  when: manual
+  only:
+    - /^release.*$/

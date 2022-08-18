@@ -1,0 +1,148 @@
+server:
+  port: 8080
+spring:
+  profiles:
+    active: dev
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      x-forwarded:
+        prefix-enabled: false
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: sys
+          uri: lb://UNITED.SSOPANDA
+          predicates:
+            - Path=/api/sys/**,/oauth/**
+          filters:
+            - "Sign"
+        - id: verification
+          uri: lb://UNITED.SSOPANDA
+          predicates:
+            - Path=/login/**
+        - id: log
+          uri: lb://UNITED.LOG
+          predicates:
+            - Path=/api/log/**
+          filters:
+            - "Sign"
+        - id: websocket
+          uri: lb:ws://UNITED.MESSAGE
+          predicates:
+            - Path=/websocket/**
+        - id: notice
+          uri: lb://UNITED.MESSAGE
+          predicates:
+            - Path=/api/notice/**
+          filters:
+            - "Sign"
+        - id: message
+          uri: lb://UNITED.MESSAGE
+          predicates:
+            - Path=/api/message/**
+          filters:
+            - "Sign"
+        - id: schedule
+          uri: lb://UNITED.JOB
+          predicates:
+            - Path=/api/schedule/**
+          filters:
+            - "Sign"
+        - id: act
+          uri: lb://UNITED.ACTIVITI
+          predicates:
+            - Path=/api/act/**
+          filters:
+            - "Sign"
+        - id: actModeler
+          uri: lb://UNITED.ACTIVITI
+          predicates:
+            - Path=/modeler.html,/editor-app/**,/service/**,/favicon.ico
+        - id: oss
+          uri: lb://UNITED.OSS
+          predicates:
+            - Path=/api/oss/**,/preview/**
+          filters:
+            - "Sign"
+#        - id: transform
+#          uri: https://top.com
+#          predicates:
+#            - Path=/transform/**
+#          filters:
+#            - "Transform"
+#        - id: sign
+#          uri: http://192.168.1.5:8282
+#          predicates:
+#            - Path=/v1/**
+#          filters:
+#            - "Sign"
+#            - RewritePath=/v1(?<segment>/?.*), $\{segment}
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimumIdle: 10
+      maximumPoolSize: 10
+      maxLifetime: 1200000
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+  cache:
+    type: redis
+    redis:
+      time-to-live: 15000
+      cache-null-values: false
+  redis:
+    host: redis
+    password:
+    database: 2
+  flyway:
+    enabled: true
+    locations: filesystem:docker/app/db/migration
+    table: flyway_schema_history_gateway
+    baseline-on-migrate: true
+    validate-on-migrate: false
+
+logging:
+  level:
+    org:
+      springframework: error
+    com:
+      onefly: debug
+  pattern:
+    console: "%clr(%d){blue} [%clr(%-5level){lightgreen}] [%logger{0}] - %msg%n"
+    file: "%d [%-5level] [%logger{0}] - %msg%n"
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${SPRING_REGISTRY_URI:http://eureka:8761}/eureka/
+    register-with-eureka: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
+  health:
+    mail:
+      enabled: false
