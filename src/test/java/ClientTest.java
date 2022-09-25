@@ -64,11 +64,11 @@ public class ClientTest {
         headers.add(HttpHeader.MESSAGE_VERSION, MessageVersion.V1_0_0.getVersion());//报文版本
         headers.add(HttpHeader.VERSION, "1.0.0");//API 版本
         headers.add(HttpHeader.CLIENT_ID, message.getClientId());//clientId
-        headers.add(HttpHeader.SIGNATURE, message.getSign());//sign
         headers.add(HttpHeader.TIMESTAMP, message.getTimestamp());//timestamp
         headers.add(HttpHeader.NONCE, message.getRandomString());//randomString
         headers.add(HttpHeader.PARAMS, "code");
         headers.add(HttpHeader.method, SignType.HmacMD5.toString());
+        headers.add(HttpHeader.SIGNATURE, message.getSign());//sign
         HttpEntity<?> requestEntity = new HttpEntity<Object>(headers);
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8181/v1/gateway")
                 .queryParam("code", "SYSTEM_NAME");
