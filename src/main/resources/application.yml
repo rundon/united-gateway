@@ -4,7 +4,7 @@ spring:
   profiles:
     active: dev
   application:
-    name: gateway
+    name: united.gateway
   cloud:
     gateway:
       x-forwarded:
@@ -65,9 +65,15 @@ spring:
         - id: oss
           uri: lb://UNITED.OSS
           predicates:
-            - Path=/api/oss/**,/preview/**
+            - Path=/api/oss/**
+#          filters:
+#            - "Sign"
+        - id: preview
+          uri: lb://UNITED.OSS
+          predicates:
+            - Path=/preview/**
           filters:
-            - "Sign"
+            - StripPrefix= 1
 #        - id: transform
 #          uri: https://top.com
 #          predicates:

@@ -80,7 +80,7 @@ public class SignV1ServerImpl implements SignServer {
         if (StringUtils.isEmpty(clientId)) {
             return Mono.error(new ResourceNonExistException("客户端不存在: " + clientId));
         }
-       // Optional.ofNullable(request.getHeaders().getFirst(HttpHeader.PARAMS)).orElseThrow(() -> new SignatureException(HttpHeader.PARAMS + "不能为空"));
+        // Optional.ofNullable(request.getHeaders().getFirst(HttpHeader.PARAMS)).orElseThrow(() -> new SignatureException(HttpHeader.PARAMS + "不能为空"));
         String signType = request.getHeaders().getFirst(HttpHeader.METHOD) == null ? SignType.HmacSHA256.toString() : request.getHeaders().getFirst(HttpHeader.METHOD);
         Client client = clientService.getClient(clientId);
         if (null == client || SignType.RSA.toString().equals(signType) && StringUtils.isEmpty(client.getClientPublicKey())
