@@ -61,7 +61,9 @@ spring:
         - id: actModeler
           uri: lb://UNITED.ACTIVITI
           predicates:
-            - Path=/modeler.html,/editor-app/**,/service/**,/favicon.ico
+            - Path=/design/**
+          filters:
+            - StripPrefix= 1
         - id: oss
           uri: lb://UNITED.OSS
           predicates:
